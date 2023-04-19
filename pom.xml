@@ -297,6 +297,9 @@
                     <include>git.properties</include>
                   </includes>
                 </resource>
+                <resource>
+                  <directory>${project.basedir}/src/main/resources</directory>
+                </resource>
               </resources>
             </configuration>
           </execution>
@@ -359,6 +362,14 @@
         </includes>
       </resource>
     </resources>
+    <testResources>
+      <testResource>
+        <directory>${project.basedir}/src/test/resources</directory>
+      </testResource>
+      <testResource>
+        <directory>${project.basedir}/src/main/resources</directory>
+      </testResource>
+    </testResources>
   </build>
 
   <reporting>
