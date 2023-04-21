@@ -1,5 +1,5 @@
-/*
- * Copyright 2022 VMware, Inc.
+package net.hydromatic.sqllogictest.executors;/*
+ * Copyright 2023 VMware, Inc.
  * SPDX-License-Identifier: MIT
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,39 +21,24 @@
  * SOFTWARE.
  */
 
-package net.hydromatic.sqllogictest.executors;
-
 import net.hydromatic.sqllogictest.ExecutionOptions;
 import net.hydromatic.sqllogictest.SltTestFile;
 import net.hydromatic.sqllogictest.TestStatistics;
 
-/**
- * This executor does not execute the tests at all.
- * It is still useful to validate that the test parsing works.
- */
-public class NoExecutor extends SqlSltTestExecutor {
-  NoExecutor(ExecutionOptions options) {
-    super(options);
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+public abstract class SqlSltTestExecutor extends SqlTestExecutor {
+  protected final ExecutionOptions options;
+
+  SqlSltTestExecutor(ExecutionOptions options) {
+    this.options = options;
   }
 
-  public static class Factory extends ExecutorFactory {
-    public static final Factory INSTANCE = new Factory();
-    private Factory() {}
-
-    @Override
-    public void register(ExecutionOptions execOptions) {
-      execOptions.registerExecutor("none", () -> new NoExecutor(execOptions));
-    }
-  }
-
-  @Override
-  public TestStatistics execute(SltTestFile testFile, ExecutionOptions options) {
-    TestStatistics result = new TestStatistics(options.stopAtFirstError);
-    this.startTest();
-    result.setFailed(0);
-    result.setIgnored(testFile.getTestCount());
-    result.setPassed(0);
-    options.message(this.elapsedTime(testFile.getTestCount()), 1);
-    return result;
-  }
+  /**
+   * Execute the specified test file.
+   */
+  public abstract TestStatistics execute(SltTestFile testFile, ExecutionOptions options)
+      throws SQLException, NoSuchAlgorithmException;
 }

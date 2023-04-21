@@ -39,14 +39,14 @@ public class PostgresExecutor extends JdbcExecutor {
         String username = "";
         String password = "";
 
-        public static PostgresExecutor.Factory INSTANCE = new PostgresExecutor.Factory();
+        public static final PostgresExecutor.Factory INSTANCE = new PostgresExecutor.Factory();
         private Factory() {}
 
         @Override
         public void register(ExecutionOptions options) {
-            options.registerOption("-u", "username", "Postgres user name", false, o -> { this.username = o; return true; });
+            options.registerOption("-u", "username", "Postgres user name", o -> { this.username = o; return true; });
             options.registerOption("-p", "password", "Postgres password",
-                    false, o -> { this.password = o; return true; });
+                    o -> { this.password = o; return true; });
             options.registerExecutor("psql", () -> {
                 PostgresExecutor result = new PostgresExecutor(options,
                         this.username, this.password);
