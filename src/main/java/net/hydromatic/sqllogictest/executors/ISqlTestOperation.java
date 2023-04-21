@@ -23,37 +23,7 @@
 
 package net.hydromatic.sqllogictest.executors;
 
-import net.hydromatic.sqllogictest.ExecutionOptions;
-import net.hydromatic.sqllogictest.SltTestFile;
-import net.hydromatic.sqllogictest.TestStatistics;
-
 /**
- * This executor does not execute the tests at all.
- * It is still useful to validate that the test parsing works.
+ * Base interface for SqlLogicTest operations: either statements or queries.
  */
-public class NoExecutor extends SqlSltTestExecutor {
-  NoExecutor(ExecutionOptions options) {
-    super(options);
-  }
-
-  public static class Factory extends ExecutorFactory {
-    public static final Factory INSTANCE = new Factory();
-    private Factory() {}
-
-    @Override
-    public void register(ExecutionOptions execOptions) {
-      execOptions.registerExecutor("none", () -> new NoExecutor(execOptions));
-    }
-  }
-
-  @Override
-  public TestStatistics execute(SltTestFile testFile, ExecutionOptions options) {
-    TestStatistics result = new TestStatistics(options.stopAtFirstError);
-    this.startTest();
-    result.setFailed(0);
-    result.setIgnored(testFile.getTestCount());
-    result.setPassed(0);
-    options.message(this.elapsedTime(testFile.getTestCount()), 1);
-    return result;
-  }
-}
+public interface ISqlTestOperation extends ICastable { }

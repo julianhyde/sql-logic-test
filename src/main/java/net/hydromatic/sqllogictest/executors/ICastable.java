@@ -1,7 +1,6 @@
 /*
  * Copyright 2022 VMware, Inc.
  * SPDX-License-Identifier: MIT
- * SPDX-License-Identifier: Apache-2.0
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,11 +19,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- *
- *
  */
 
-package net.hydromatic.sqllogictest;
+package net.hydromatic.sqllogictest.executors;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -32,11 +29,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * Utility interface providing some useful casting methods.
  */
 public interface ICastable {
-  default <T> @Nullable T as(Class<T> clazz) {
+  @Nullable
+  default <T> T as(Class<T> clazz) {
     return ICastable.as(this, clazz);
   }
 
-  static <T> @Nullable T as(Object obj, Class<T> clazz) {
+  @Nullable
+  static <T> T as(Object obj, Class<T> clazz) {
     try {
       return clazz.cast(obj);
     } catch (ClassCastException e) {
@@ -51,11 +50,8 @@ public interface ICastable {
   default <T> T as(Class<T> clazz, @Nullable String failureMessage) {
     T result = this.as(clazz);
     if (result == null) {
-      if (failureMessage == null) {
-        failureMessage =
-            this + "(" + this.getClass().getName() + ") is not an instance of "
-                + clazz;
-      }
+      if (failureMessage == null)
+        failureMessage = this + "(" + this.getClass().getName() + ") is not an instance of " + clazz;
       this.error(failureMessage);
     }
     assert result != null;
