@@ -29,43 +29,56 @@ import net.hydromatic.sqllogictest.executors.PostgresExecutor;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Execute all SqlLogicTest tests.
  */
 public class Main {
+  private Main() {
+  }
+
   public static void main(String[] argv) throws IOException {
-    execute(true, argv);
+    execute(true, System.out, System.err, argv);
   }
 
   /** As {@link #main} but does not call {@link System#exit} if {@code exit}
    * is false. */
-  public static int execute(boolean exit, String... argv) throws IOException {
-    ExecutionOptions options = new ExecutionOptions(exit);
+  public static int execute(boolean exit, PrintStream out, PrintStream err,
+      String... argv) throws IOException {
+    ExecutionOptions options = new ExecutionOptions(exit, out, err);
     options.setBinaryName("slt");
     NoExecutor.Factory.INSTANCE.register(options);
     HsqldbExecutor.Factory.INSTANCE.register(options);
     PostgresExecutor.Factory.INSTANCE.register(options);
     int parse = options.parse(argv);
-    if (parse != 0)
+    if (parse != 0) {
       return parse;
-    if (options.directory == null || options.directory.isEmpty())
+    }
+    if (options.directory == null || options.directory.isEmpty()) {
       return options.abort(exit,
-              "Please specify the directory with the SqlLogicTest suite using the -d flag");
+          "Please specify the directory with the SqlLogicTest suite using the -d flag");
+    }
 
     File dir = new File(options.directory);
     if (dir.exists()) {
-      if (!dir.isDirectory())
+      if (!dir.isDirectory()) {
         return options.abort(exit, options.directory + " is not a directory");
-      if (options.install)
-        System.err.println("Directory " + options.directory + " exists; skipping download");
+      }
+      if (options.install) {
+        err.println("Directory " + options.directory
+            + " exists; skipping download");
+      }
     } else {
       if (options.install) {
         SltInstaller installer = new SltInstaller(dir);
         installer.install();
       } else {
-        return options.abort(exit, options.directory + " does not exist and no installation was specified");
+        return options.abort(exit, options.directory
+            + " does not exist and no installation was specified");
       }
     }
 
@@ -74,8 +87,8 @@ public class Main {
       Path path = Paths.get(options.directory + "/test/" + file);
       Files.walkFileTree(path, loader);
     }
-    System.out.println("Files that could not be not parsed: " + loader.errors);
-    System.out.println(loader.statistics);
+    out.println("Files that could not be not parsed: " + loader.errors);
+    out.println(loader.statistics);
     return 0;
   }
 }

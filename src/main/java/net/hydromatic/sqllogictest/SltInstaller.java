@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -41,69 +42,77 @@ import java.util.zip.ZipInputStream;
  * This class downloads and unzips the SQL Logic Test files.
  */
 public class SltInstaller {
-    /**
-     * This URL is of a git repository that mirrors the SLT code.
-     * The actual code is in a Fossil repository and has a captcha for anonymous downloading.
-     */
-    static final String SLT_GIT = "https://github.com/gregrahn/sqllogictest/archive/refs/heads/master.zip";
+  /**
+   * This URL is of a git repository that mirrors the SLT code.
+   *
+   * <p>The actual code is in a Fossil repository and has a captcha for
+   * anonymous downloading.
+   */
+  static final String SLT_GIT =
+      "https://github.com/gregrahn/sqllogictest/archive/refs/heads/master.zip";
 
-    private final File destination;
+  private final File destination;
+  private final PrintStream out = System.out;
 
-    SltInstaller(File destination) {
-        this.destination = destination;
+  SltInstaller(File destination) {
+    this.destination = destination;
+  }
+
+  @Nullable
+  static File newFile(File destinationDir, ZipEntry zipEntry)
+      throws IOException {
+    String name = zipEntry.getName();
+    name = name.replace("sqllogictest-master/", "");
+    if (name.isEmpty()) {
+      return null;
     }
-
-    @Nullable
-    static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
-        String name = zipEntry.getName();
-        name = name.replace("sqllogictest-master/", "");
-        if (name.isEmpty())
-            return null;
-        File destFile = new File(destinationDir, name);
-        String destDirPath = destinationDir.getCanonicalPath();
-        String destFilePath = destFile.getCanonicalPath();
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + name);
-        }
-        return destFile;
+    File destFile = new File(destinationDir, name);
+    String destDirPath = destinationDir.getCanonicalPath();
+    String destFilePath = destFile.getCanonicalPath();
+    if (!destFilePath.startsWith(destDirPath + File.separator)) {
+      throw new IOException("Entry is outside of the target dir: " + name);
     }
+    return destFile;
+  }
 
-    public void install() throws IOException {
-        File zip = File.createTempFile("out", ".zip", new File("."));
-        System.out.println("Downloading SLT from " + SLT_GIT + " into " + zip.getAbsolutePath());
-        zip.deleteOnExit();
-        InputStream in = new URL(SLT_GIT).openStream();
-        Files.copy(in, zip.toPath(), StandardCopyOption.REPLACE_EXISTING);
+  public void install() throws IOException {
+    File zip = File.createTempFile("out", ".zip", new File("."));
+    out.println("Downloading SLT from " + SLT_GIT + " into "
+        + zip.getAbsolutePath());
+    zip.deleteOnExit();
+    InputStream in = new URL(SLT_GIT).openStream();
+    Files.copy(in, zip.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-        System.out.println("Unzipping data");
-        try (ZipInputStream zis = new ZipInputStream(Files.newInputStream(zip.toPath()))) {
-            ZipEntry zipEntry = zis.getNextEntry();
-            while (zipEntry != null) {
-                File newFile = newFile(this.destination, zipEntry);
-                if (newFile != null) {
-                    System.out.println("Creating " + newFile.getPath());
-                    if (zipEntry.isDirectory()) {
-                        if (!newFile.isDirectory() && !newFile.mkdirs()) {
-                            throw new IOException("Failed to create directory " + newFile);
-                        }
-                    } else {
-                        File parent = newFile.getParentFile();
-                        if (!parent.isDirectory() && !parent.mkdirs()) {
-                            throw new IOException("Failed to create directory " + parent);
-                        }
-
-                        try (FileOutputStream fos = new FileOutputStream(newFile)) {
-                            int len;
-                            byte[] buffer = new byte[1024];
-                            while ((len = zis.read(buffer)) > 0) {
-                                fos.write(buffer, 0, len);
-                            }
-                        }
-                    }
-                }
-                zipEntry = zis.getNextEntry();
+    out.println("Unzipping data");
+    try (ZipInputStream zis =
+         new ZipInputStream(Files.newInputStream(zip.toPath()))) {
+      ZipEntry zipEntry = zis.getNextEntry();
+      while (zipEntry != null) {
+        File newFile = newFile(this.destination, zipEntry);
+        if (newFile != null) {
+          out.println("Creating " + newFile.getPath());
+          if (zipEntry.isDirectory()) {
+            if (!newFile.isDirectory() && !newFile.mkdirs()) {
+              throw new IOException("Failed to create directory " + newFile);
             }
-            zis.closeEntry();
+          } else {
+            File parent = newFile.getParentFile();
+            if (!parent.isDirectory() && !parent.mkdirs()) {
+              throw new IOException("Failed to create directory " + parent);
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(newFile)) {
+              int len;
+              byte[] buffer = new byte[1024];
+              while ((len = zis.read(buffer)) > 0) {
+                fos.write(buffer, 0, len);
+              }
+            }
+          }
         }
+        zipEntry = zis.getNextEntry();
+      }
+      zis.closeEntry();
     }
+  }
 }

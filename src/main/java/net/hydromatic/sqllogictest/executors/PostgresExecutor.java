@@ -26,7 +26,9 @@ package net.hydromatic.sqllogictest.executors;
 import net.hydromatic.sqllogictest.ExecutionOptions;
 
 import java.io.IOException;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -35,64 +37,69 @@ import java.util.Set;
  * A test executor that uses Postgres through JDBC.
  */
 public class PostgresExecutor extends JdbcExecutor {
-    public static class Factory extends ExecutorFactory {
-        String username = "";
-        String password = "";
+  public static class Factory extends ExecutorFactory {
+    String username = "";
+    String password = "";
 
-        public static final PostgresExecutor.Factory INSTANCE = new PostgresExecutor.Factory();
-        private Factory() {}
+    public static final PostgresExecutor.Factory INSTANCE =
+        new PostgresExecutor.Factory();
 
-        @Override
-        public void register(ExecutionOptions options) {
-            options.registerOption("-u", "username", "Postgres user name", o -> { this.username = o; return true; });
-            options.registerOption("-p", "password", "Postgres password",
-                    o -> { this.password = o; return true; });
-            options.registerExecutor("psql", () -> {
-                PostgresExecutor result = new PostgresExecutor(options,
-                        this.username, this.password);
-                try {
-                    Set<String> bugs = options.readBugsFile();
-                    result.avoid(bugs);
-                    return result;
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+    private Factory() {}
+
+    @Override public void register(ExecutionOptions options) {
+      options.registerOption("-u", "username", "Postgres user name", o -> {
+        this.username = o;
+        return true;
+      });
+      options.registerOption("-p", "password", "Postgres password", o -> {
+        this.password = o;
+        return true;
+      });
+      options.registerExecutor("psql", () -> {
+        PostgresExecutor result = new PostgresExecutor(options,
+            this.username, this.password);
+        try {
+          Set<String> bugs = options.readBugsFile();
+          result.avoid(bugs);
+          return result;
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
+      });
     }
+  }
 
-    /**
-     * Note: this implementation requires the existence of a database named SLT
-     */
-    public PostgresExecutor(ExecutionOptions options, String username, String password) {
-        super(options, "jdbc:postgresql://localhost/slt", username, password);
-    }
+  /**
+   * Note: this implementation requires the existence of a database named SLT
+   */
+  public PostgresExecutor(ExecutionOptions options, String username,
+      String password) {
+    super(options, "jdbc:postgresql://localhost/slt", username, password);
+  }
 
-    List<String> getStringResults(String query) throws SQLException {
-        List<String> result = new ArrayList<>();
-        assert this.connection != null;
-        try (Statement stmt = this.connection.createStatement()) {
-            try (ResultSet rs = stmt.executeQuery(query)) {
-                while (rs.next()) {
-                    String tableName = rs.getString(1);
-                    result.add(tableName);
-                }
-            }
+  List<String> getStringResults(String query) throws SQLException {
+    List<String> result = new ArrayList<>();
+    assert this.connection != null;
+    try (Statement stmt = this.connection.createStatement()) {
+      try (ResultSet rs = stmt.executeQuery(query)) {
+        while (rs.next()) {
+          String tableName = rs.getString(1);
+          result.add(tableName);
         }
-        return result;
+      }
     }
+    return result;
+  }
 
-    @Override
-    List<String> getTableList() throws SQLException {
-        return this.getStringResults("SELECT tableName FROM pg_catalog.pg_tables\n" +
-                "    WHERE schemaname != 'information_schema' AND\n" +
-                "    schemaname != 'pg_catalog'");
-    }
+  @Override List<String> getTableList() throws SQLException {
+    return this.getStringResults("SELECT tableName FROM pg_catalog.pg_tables\n"
+        + "    WHERE schemaname != 'information_schema' AND\n"
+        + "    schemaname != 'pg_catalog'");
+  }
 
-    @Override
-    List<String> getViewList() throws SQLException {
-        return this.getStringResults("SELECT table_name \n" +
-                "FROM information_schema.views \n" +
-                "WHERE table_schema NOT IN ('information_schema', 'pg_catalog') \n");
-    }
+  @Override List<String> getViewList() throws SQLException {
+    return this.getStringResults("SELECT table_name\n"
+        + "FROM information_schema.views\n"
+        + "WHERE table_schema NOT IN ('information_schema', 'pg_catalog')\n");
+  }
 }

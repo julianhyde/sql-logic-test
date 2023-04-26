@@ -40,14 +40,13 @@ public class NoExecutor extends SqlSltTestExecutor {
     public static final Factory INSTANCE = new Factory();
     private Factory() {}
 
-    @Override
-    public void register(ExecutionOptions execOptions) {
+    @Override public void register(ExecutionOptions execOptions) {
       execOptions.registerExecutor("none", () -> new NoExecutor(execOptions));
     }
   }
 
-  @Override
-  public TestStatistics execute(SltTestFile testFile, ExecutionOptions options) {
+  @Override public TestStatistics execute(SltTestFile testFile,
+      ExecutionOptions options) {
     TestStatistics result = new TestStatistics(options.stopAtFirstError);
     this.startTest();
     result.setFailed(0);

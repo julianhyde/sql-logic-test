@@ -31,7 +31,8 @@ import java.util.Set;
  * Base class for classes that can run tests.
  */
 public class SqlTestExecutor implements ICastable {
-  static final DecimalFormat df = new DecimalFormat("#,###");
+  static final DecimalFormat DF = new DecimalFormat("#,###");
+
   protected final Set<String> buggyOperations;
 
   private static long startTime = -1;
@@ -55,16 +56,17 @@ public class SqlTestExecutor implements ICastable {
   protected String elapsedTime(int tests) {
     long end = System.nanoTime();
     totalTests += tests;
-    return df.format(tests) + " tests took " +
-        df.format(seconds(end, this.lastTestStartTime)) + "s, "
-        + df.format(totalTests) + " took " +
-        df.format(seconds(end, startTime)) + "s";
+    return DF.format(tests) + " tests took "
+        + DF.format(seconds(end, this.lastTestStartTime)) + "s, "
+        + DF.format(totalTests) + " took "
+        + DF.format(seconds(end, startTime)) + "s";
   }
 
   @SuppressWarnings("java:S2696")  // static variable accessed
   protected void startTest() {
     this.lastTestStartTime = System.nanoTime();
-    if (startTime == -1)
+    if (startTime == -1) {
       startTime = lastTestStartTime;
+    }
   }
 }

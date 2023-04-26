@@ -23,16 +23,28 @@
 
 package net.hydromatic.sqllogictest.executors;
 
-import net.hydromatic.sqllogictest.*;
+import net.hydromatic.sqllogictest.ExecutionOptions;
+import net.hydromatic.sqllogictest.SltSqlStatement;
+import net.hydromatic.sqllogictest.SltTestFile;
+import net.hydromatic.sqllogictest.SqlTestQuery;
+import net.hydromatic.sqllogictest.SqlTestQueryOutputDescription;
+import net.hydromatic.sqllogictest.TestStatistics;
+import net.hydromatic.sqllogictest.Utilities;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLDataException;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 @SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
 public abstract class JdbcExecutor extends SqlSltTestExecutor {
@@ -40,20 +52,21 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
   protected final String password;
 
   public final String dbUrl;
-  @Nullable
-  protected Connection connection;
+  protected @Nullable Connection connection;
 
   // In SLT all data received from the database is converted to strings.
   static class Row {
     public final List<String> values;
+
     Row() {
       this.values = new ArrayList<>();
     }
+
     void add(String v) {
       this.values.add(v);
     }
-    @Override
-    public String toString() {
+
+    @Override public String toString() {
       return String.join("\n", this.values);
     }
   }
@@ -72,8 +85,7 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
       this.allRows.add(row);
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
       return String.join("\n", Utilities.map(this.allRows, Row::toString));
     }
 
@@ -102,7 +114,8 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
     }
   }
 
-  public JdbcExecutor(ExecutionOptions options, String dbUrl, String username, String password) {
+  public JdbcExecutor(ExecutionOptions options, String dbUrl, String username,
+      String password) {
     super(options);
     this.dbUrl = dbUrl;
     this.username = username;
@@ -112,16 +125,20 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
 
   void statement(SltSqlStatement statement) throws SQLException {
     String stat = statement.statement;
-    // Some tests drop views in the wrong order, e.g., sqllogictest/test/index/view/1000/slt_good_0.test
+    // Some tests drop views in the wrong order, e.g.,
+    // sqllogictest/test/index/view/1000/slt_good_0.test
     if (stat.toLowerCase().startsWith("drop view")) {
-      if (!stat.toLowerCase().contains("if exists"))
+      if (!stat.toLowerCase().contains("if exists")) {
         stat = stat.substring(0, 9) + " IF EXISTS " + stat.substring(10);
-      if (!stat.toLowerCase().contains("cascade"))
+      }
+      if (!stat.toLowerCase().contains("cascade")) {
         stat += " CASCADE";
+      }
     }
     this.options.message(this.statementsExecuted + ": " + stat, 2);
     assert this.connection != null;
-    if (this.buggyOperations.contains(statement.statement) || this.options.doNotExecute) {
+    if (this.buggyOperations.contains(statement.statement)
+        || this.options.doNotExecute) {
       options.message("Skipping " + statement.statement, 2);
       return;
     }
@@ -136,9 +153,11 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
     this.statementsExecuted++;
   }
 
-  void query(SqlTestQuery query, TestStatistics statistics) throws SQLException, NoSuchAlgorithmException {
+  void query(SqlTestQuery query, TestStatistics statistics)
+      throws SQLException, NoSuchAlgorithmException {
     assert this.connection != null;
-    if (this.buggyOperations.contains(query.getQuery()) || this.options.doNotExecute) {
+    if (this.buggyOperations.contains(query.getQuery())
+        || this.options.doNotExecute) {
       statistics.incIgnored();
       options.message("Skipping " + query.getQuery(), 2);
       return;
@@ -164,18 +183,20 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
       switch (c) {
       case 'R':
         double d = rs.getDouble(i);
-        if (rs.wasNull())
+        if (rs.wasNull()) {
           row.add("NULL");
-        else
+        } else {
           row.add(String.format("%.3f", d));
+        }
         break;
       case 'I':
         try {
           long integer = rs.getLong(i);
-          if (rs.wasNull())
+          if (rs.wasNull()) {
             row.add("NULL");
-          else
+          } else {
             row.add(String.format("%d", integer));
+          }
         } catch (SQLDataException | NumberFormatException ignore) {
           // This probably indicates a bug in the query, since
           // the query expects an integer, but the result cannot
@@ -186,14 +207,15 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
         break;
       case 'T':
         String s = rs.getString(i);
-        if (s == null)
+        if (s == null) {
           row.add("NULL");
-        else {
+        } else {
           StringBuilder result = new StringBuilder();
           for (int j = 0; j < s.length(); j++) {
             char sc = s.charAt(j);
-            if (sc < ' ' || sc > '~')
+            if (sc < ' ' || sc > '~') {
               sc = '@';
+            }
             result.append(sc);
           }
           row.add(result.toString());
@@ -207,14 +229,15 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
   }
 
   static class RowComparator implements Comparator<Row> {
-    @Override
-    public int compare(Row o1, Row o2) {
-      if (o1.values.size() != o2.values.size())
+    @Override public int compare(Row o1, Row o2) {
+      if (o1.values.size() != o2.values.size()) {
         throw new RuntimeException("Comparing rows of different lengths");
+      }
       for (int i = 0; i < o1.values.size(); i++) {
         int r = o1.values.get(i).compareTo(o2.values.get(i));
-        if (r != 0)
+        if (r != 0) {
           return r;
+        }
       }
       return 0;
     }
@@ -231,10 +254,13 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
       Row row = this.getValue(rs, description.columnTypes);
       rows.add(row);
     }
-    if (description.getValueCount() != rows.size() * description.columnTypes.length()) {
-      statistics.addFailure(new TestStatistics.FailedTestDescription(
-          query, "Expected " + description.getValueCount() + " rows, got " +
-          rows.size() * description.columnTypes.length(), null, options.verbosity > 0));
+    if (description.getValueCount()
+        != rows.size() * description.columnTypes.length()) {
+      statistics.addFailure(
+          new TestStatistics.FailedTestDescription(query,
+              "Expected " + description.getValueCount() + " rows, got "
+                  + rows.size() * description.columnTypes.length(),
+              null, options.verbosity > 0));
       return;
     }
     rows.sort(description.getOrder());
@@ -244,7 +270,7 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
       if (!r.equals(q)) {
         statistics.addFailure(new TestStatistics.FailedTestDescription(
             query, "Output differs: computed\n" + r + "\nExpected:\n" + q,
-                null, options.verbosity > 0));
+            null, options.verbosity > 0));
         return;
       }
     }
@@ -259,7 +285,7 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
       if (!description.hash.equals(hash)) {
         statistics.addFailure(new TestStatistics.FailedTestDescription(
             query, "Hash of data does not match expected value", null,
-                options.verbosity > 0));
+            options.verbosity > 0));
         return;
       }
     }
@@ -280,8 +306,9 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
     assert this.connection != null;
     List<String> tables = this.getTableList();
     for (String tableName : tables) {
-      // Unfortunately prepare statements cannot be parameterized in table names.
-      // Sonar complains about this, but there is nothing we can do but suppress the warning.
+      // Unfortunately prepare statements cannot be parameterized in
+      // table names.  Sonar complains about this, but there is
+      // nothing we can do but suppress the warning.
       String del = "DROP TABLE " + tableName + " CASCADE";
       options.message(del, 2);
       try (Statement drop = this.connection.createStatement()) {
@@ -294,8 +321,9 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
     assert this.connection != null;
     List<String> tables = this.getViewList();
     for (String tableName : tables) {
-      // Unfortunately prepare statements cannot be parameterized in table names.
-      // Sonar complains about this, but there is nothing we can do but suppress the warning.
+      // Unfortunately prepare statements cannot be parameterized in
+      // table names.  Sonar complains about this, but there is
+      // nothing we can do but suppress the warning.
       String del = "DROP VIEW IF EXISTS " + tableName + " CASCADE";
       options.message(del, 2);
       try (Statement drop = this.connection.createStatement()) {
@@ -315,31 +343,32 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
     this.connection.close();
   }
 
-  @Override
-  public TestStatistics execute(SltTestFile file, ExecutionOptions options)
+  @Override public TestStatistics execute(SltTestFile file,
+      ExecutionOptions options)
       throws SQLException, NoSuchAlgorithmException {
     this.startTest();
     this.establishConnection();
     this.dropAllTables();
     TestStatistics result = new TestStatistics(options.stopAtFirstError);
     for (ISqlTestOperation operation : file.fileContents) {
-        SltSqlStatement stat = operation.as(SltSqlStatement.class);
-        if (stat != null) {
-          try {
-            this.statement(stat);
-          } catch (SQLException ex) {
-            System.err.println("Error while processing #" +  (result.testsRun()+1) + " " + operation);
-            throw ex;
-          }
-        } else {
-          SqlTestQuery query = operation.to(SqlTestQuery.class);
-          try {
-            this.query(query, result);
-          } catch (SQLException ex) {
-            result.addFailure(new TestStatistics.FailedTestDescription(
-                    query, ex.getMessage(), ex, options.verbosity > 0));
-          }
+      SltSqlStatement stat = operation.as(SltSqlStatement.class);
+      if (stat != null) {
+        try {
+          this.statement(stat);
+        } catch (SQLException ex) {
+          options.err.println("Error while processing #"
+              + (result.testsRun() + 1) + " " + operation);
+          throw ex;
         }
+      } else {
+        SqlTestQuery query = operation.to(options.err, SqlTestQuery.class);
+        try {
+          this.query(query, result);
+        } catch (SQLException ex) {
+          result.addFailure(new TestStatistics.FailedTestDescription(
+              query, ex.getMessage(), ex, options.verbosity > 0));
+        }
+      }
     }
     this.dropAllViews();
     this.dropAllTables();

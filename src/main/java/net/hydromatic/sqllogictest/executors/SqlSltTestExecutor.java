@@ -1,4 +1,4 @@
-package net.hydromatic.sqllogictest.executors;/*
+/*
  * Copyright 2023 VMware, Inc.
  * SPDX-License-Identifier: MIT
  *
@@ -20,12 +20,12 @@ package net.hydromatic.sqllogictest.executors;/*
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+package net.hydromatic.sqllogictest.executors;
 
 import net.hydromatic.sqllogictest.ExecutionOptions;
 import net.hydromatic.sqllogictest.SltTestFile;
 import net.hydromatic.sqllogictest.TestStatistics;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
@@ -37,8 +37,9 @@ public abstract class SqlSltTestExecutor extends SqlTestExecutor {
   }
 
   /**
-   * Execute the specified test file.
+   * Executes the specified test file.
    */
-  public abstract TestStatistics execute(SltTestFile testFile, ExecutionOptions options)
+  public abstract TestStatistics execute(SltTestFile testFile,
+      ExecutionOptions options)
       throws SQLException, NoSuchAlgorithmException;
 }

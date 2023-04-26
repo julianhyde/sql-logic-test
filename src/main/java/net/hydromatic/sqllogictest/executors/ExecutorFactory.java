@@ -29,9 +29,9 @@ import net.hydromatic.sqllogictest.ExecutionOptions;
  * An executor factory creates a {@link SqlTestExecutor}.
  */
 public abstract class ExecutorFactory {
-    /**
-     * Register this factory with the Execution options.
-     * May install new command-line flags as well.
-     */
-    public abstract void register(ExecutionOptions options);
+  /**
+   * Register this factory with the Execution options.
+   * May install new command-line flags as well.
+   */
+  public abstract void register(ExecutionOptions options);
 }

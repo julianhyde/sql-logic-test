@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TestStatistics {
-  static final DecimalFormat df = new DecimalFormat("#,###");
+  static final DecimalFormat DF = new DecimalFormat("#,###");
 
   public static class FailedTestDescription {
     public final SqlTestQuery query;
@@ -39,23 +39,25 @@ public class TestStatistics {
     public final Throwable exception;
     public final boolean verbose;
 
-    public FailedTestDescription(SqlTestQuery query, String error, @Nullable Throwable exception, boolean verbose) {
+    public FailedTestDescription(SqlTestQuery query, String error,
+        @Nullable Throwable exception, boolean verbose) {
       this.query = query;
       this.error = error;
       this.exception = exception;
       this.verbose = verbose;
     }
 
-    @Override
-    public String toString() {
+    @Override public String toString() {
       String extra = "";
       if (this.exception != null && this.verbose) {
         StringPrintStream str = new StringPrintStream();
         this.exception.printStackTrace(str.getPrintStream());
         extra = str + "\n";
       }
-      return "ERROR: " + this.error + "\n\t" + this.query.file + ":" + this.query.line +
-          "\n\t" + this.query + "\n" + extra;
+      return "ERROR: " + this.error
+          + "\n\t" + this.query.file + ":" + this.query.line
+          + "\n\t" + this.query
+          + "\n" + extra;
     }
   }
 
@@ -118,19 +120,19 @@ public class TestStatistics {
     return this.passed + this.ignored + this.failed;
   }
 
-  @Override
-  public String toString() {
+  @Override public String toString() {
     StringBuilder result = new StringBuilder();
-    if (!this.failures.isEmpty())
+    if (!this.failures.isEmpty()) {
       result.append(this.failures.size())
           .append(" failures:\n");
-    for (FailedTestDescription failure : this.failures)
+    }
+    for (FailedTestDescription failure : this.failures) {
       result.append(failure.toString());
-    return "Passed: " + TestStatistics.df.format(this.passed) +
-        "\nFailed: " + TestStatistics.df.format(this.failed) +
-        "\nIgnored: " + TestStatistics.df.format(this.ignored) +
-        "\n" +
-        result;
+    }
+    return "Passed: " + TestStatistics.DF.format(this.passed)
+        + "\nFailed: " + TestStatistics.DF.format(this.failed)
+        + "\nIgnored: " + TestStatistics.DF.format(this.ignored)
+        + "\n" + result;
   }
 
   public int totalTests() {

@@ -25,17 +25,17 @@ package net.hydromatic.sqllogictest.executors;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.io.PrintStream;
+
 /**
  * Utility interface providing some useful casting methods.
  */
 public interface ICastable {
-  @Nullable
-  default <T> T as(Class<T> clazz) {
-    return ICastable.as(this, clazz);
+  default <T> @Nullable T as(Class<T> clazz) {
+    return ICastable.as(this, clazz, (String) null);
   }
 
-  @Nullable
-  static <T> T as(Object obj, Class<T> clazz) {
+  static <T> @Nullable T as(Object obj, Class<T> clazz, String s) {
     try {
       return clazz.cast(obj);
     } catch (ClassCastException e) {
@@ -43,23 +43,26 @@ public interface ICastable {
     }
   }
 
-  default void error(String message) {
-    System.err.println(message);
+  default void error(PrintStream err, String message) {
+    err.println(message);
   }
 
-  default <T> T as(Class<T> clazz, @Nullable String failureMessage) {
+  default <T> T as(PrintStream err, Class<T> clazz,
+      @Nullable String failureMessage) {
     T result = this.as(clazz);
     if (result == null) {
-      if (failureMessage == null)
-        failureMessage = this + "(" + this.getClass().getName() + ") is not an instance of " + clazz;
-      this.error(failureMessage);
+      if (failureMessage == null) {
+        failureMessage = this + "(" + this.getClass().getName()
+            + ") is not an instance of " + clazz;
+      }
+      this.error(err, failureMessage);
     }
     assert result != null;
     return result;
   }
 
-  default <T> T to(Class<T> clazz) {
-    return this.as(clazz, (String) null);
+  default <T> T to(PrintStream err, Class<T> clazz) {
+    return this.as(err, clazz, (String) null);
   }
 
   default <T> boolean is(Class<T> clazz) {

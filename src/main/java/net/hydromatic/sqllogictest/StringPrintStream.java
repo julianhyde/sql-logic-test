@@ -39,7 +39,8 @@ public class StringPrintStream {
   public StringPrintStream() {
     this.byteStream = new ByteArrayOutputStream();
     try {
-      this.stream = new PrintStream(this.byteStream, true, StandardCharsets.UTF_8.name());
+      this.stream =
+          new PrintStream(this.byteStream, true, StandardCharsets.UTF_8.name());
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
@@ -50,12 +51,13 @@ public class StringPrintStream {
   }
 
   /**
-   * Get the data written so far.  Once this is done the stream is closed and can't be used anymore.
+   * Get the data written so far.  Once this is done the stream is
+   * closed and can't be used anymore.
    */
-  @Override
-  public String toString() {
-    if (!this.closed)
+  @Override public String toString() {
+    if (!this.closed) {
       this.stream.close();
+    }
     this.closed = true;
     return this.byteStream.toString();
   }
