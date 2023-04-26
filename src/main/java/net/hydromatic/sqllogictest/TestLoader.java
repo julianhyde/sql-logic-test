@@ -23,7 +23,7 @@
 
 package net.hydromatic.sqllogictest;
 
-import net.hydromatic.sqllogictest.executors.SqlSLTTestExecutor;
+import net.hydromatic.sqllogictest.executors.SqlSltTestExecutor;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -48,15 +48,15 @@ class TestLoader extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-        SqlSLTTestExecutor executor = this.options.getExecutor();
+        SqlSltTestExecutor executor = this.options.getExecutor();
         if (executor == null)
             return FileVisitResult.TERMINATE;
         String extension = Utilities.getFileExtension(file.toString());
         if (attrs.isRegularFile() && extension != null && extension.equals("test")) {
-            SLTTestFile test = null;
+            SltTestFile test = null;
             try {
                 options.message("Running " + file, 1);
-                test = new SLTTestFile(file.toString());
+                test = new SltTestFile(file.toString());
                 test.parse(options);
             } catch (Exception ex) {
                 System.err.println("Error while executing test " + file + ": " + ex.getMessage());

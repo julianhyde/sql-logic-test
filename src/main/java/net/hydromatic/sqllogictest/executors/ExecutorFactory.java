@@ -26,7 +26,7 @@ package net.hydromatic.sqllogictest.executors;
 import net.hydromatic.sqllogictest.ExecutionOptions;
 
 /**
- * An executor factor creates an SLTTestExecutor.
+ * An executor factory creates an {@link SqlSltTestExecutor}.
  */
 public abstract class ExecutorFactory {
     /**

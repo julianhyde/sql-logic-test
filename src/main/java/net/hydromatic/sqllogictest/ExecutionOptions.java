@@ -31,7 +31,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import net.hydromatic.sqllogictest.executors.SqlSLTTestExecutor;
+import net.hydromatic.sqllogictest.executors.SqlSltTestExecutor;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
@@ -99,7 +99,7 @@ public class ExecutionOptions {
   /**
    * For each executor name a factory which knows how to produce the executor.
    */
-  final Map<String, Supplier<SqlSLTTestExecutor>> executorFactories;
+  final Map<String, Supplier<SqlSltTestExecutor>> executorFactories;
   /**
    * If true call System.exit on error.
    */
@@ -145,15 +145,15 @@ public class ExecutionOptions {
     return this.abort(this.exit, message);
   }
 
-  /*
-  JDBCExecutor jdbcExecutor(HashSet<String> sltBugs) {
-    JDBCExecutor jdbc = new JDBCExecutor(this.jdbcConnectionString());
+/*
+  JdbcExecutor jdbcExecutor(HashSet<String> sltBugs) {
+    JdbcExecutor jdbc = new JdbcExecutor(this.jdbcConnectionString());
     jdbc.avoid(sltBugs);
     jdbc.setValidateStatus(this.validateStatus);
     return jdbc;
   }
 
-  SqlSLTTestExecutor getExecutor() throws IOException, SQLException {
+  SqlSltTestExecutor getExecutor() throws IOException, SQLException {
     HashSet<String> sltBugs = new HashSet<>();
     if (this.bugsFile != null) {
       sltBugs = this.readBugsFile(this.bugsFile);
@@ -170,7 +170,7 @@ public class ExecutionOptions {
     }
     throw new RuntimeException("Unknown executor: " + this.executor);  // unreachable
   }
-   */
+*/
 
   public List<String> getDirectories() {
     if (this.directories.isEmpty())
@@ -243,7 +243,7 @@ public class ExecutionOptions {
             false, o -> { this.verbosity++; return true; });
   }
 
-  public void registerExecutor(String executorName, Supplier<SqlSLTTestExecutor> executor) {
+  public void registerExecutor(String executorName, Supplier<SqlSltTestExecutor> executor) {
     if (this.executorFactories.containsKey(executorName)) {
       throw new RuntimeException("Executor for " + Utilities.singleQuote(executorName) + " already registered");
     }
@@ -251,12 +251,12 @@ public class ExecutionOptions {
   }
 
   @Nullable
-  public SqlSLTTestExecutor getExecutor() {
+  public SqlSltTestExecutor getExecutor() {
     if (this.executor == null || this.executor.isEmpty()) {
       this.abort("Please supply an executor name using the -e flag");
       return null;
     }
-    Supplier<SqlSLTTestExecutor> supplier = this.executorFactories.get(this.executor);
+    Supplier<SqlSltTestExecutor> supplier = this.executorFactories.get(this.executor);
     if (supplier == null) {
       System.err.println("Executor for " + Utilities.singleQuote(this.executor)
               + " not registered using 'registerExecutor");

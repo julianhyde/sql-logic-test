@@ -31,12 +31,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import java.sql.*;
-
 /**
  * A test executor that uses Postgres through JDBC.
  */
-public class PostgresExecutor extends JDBCExecutor {
+public class PostgresExecutor extends JdbcExecutor {
     public static class Factory extends ExecutorFactory {
         String username = "";
         String password = "";

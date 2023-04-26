@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * A test executor that uses HSQLDB through JDBC.
  */
-public class HSQLExecutor extends JDBCExecutor {
+public class HSQLExecutor extends JdbcExecutor {
     public static class Factory extends ExecutorFactory {
         public static HSQLExecutor.Factory INSTANCE = new HSQLExecutor.Factory();
         private Factory() {}
