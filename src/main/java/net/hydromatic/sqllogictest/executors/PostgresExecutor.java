@@ -40,6 +40,7 @@ public class PostgresExecutor extends JdbcExecutor {
   /**
    * Register the postgres-specific command-line options with the
    * execution options.
+   *
    * @param optionsParser  Options that parse the command-line and
    *                 guide the execution.
    */
@@ -58,7 +59,7 @@ public class PostgresExecutor extends JdbcExecutor {
     optionsParser.registerExecutor("psql", () -> {
       PostgresExecutor result =
           new PostgresExecutor(optionsParser.getOptions(),
-                  username.get(), password.get());
+              username.get(), password.get());
       try {
         Set<String> bugs = optionsParser.getOptions().readBugsFile();
         result.avoid(bugs);
@@ -72,8 +73,8 @@ public class PostgresExecutor extends JdbcExecutor {
   /**
    * Note: this implementation requires the existence of a database named SLT
    */
-  public PostgresExecutor(OptionsParser.SuppliedOptions options, String username,
-                          String password) {
+  public PostgresExecutor(OptionsParser.SuppliedOptions options,
+      String username, String password) {
     super(options, "jdbc:postgresql://localhost/slt", username, password);
   }
 

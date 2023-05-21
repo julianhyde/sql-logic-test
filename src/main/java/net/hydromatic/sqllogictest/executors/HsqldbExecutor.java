@@ -44,6 +44,7 @@ public class HsqldbExecutor extends JdbcExecutor {
 
   /**
    * Register the HSQL DB executor with the command-line options.
+   *
    * @param optionsParser  Options that will guide the execution.
    */
   public static void register(OptionsParser optionsParser) {

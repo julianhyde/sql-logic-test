@@ -38,21 +38,21 @@ import java.util.Set;
 public class Main {
   private Main() {}
 
-  public static void main(String[] argv) throws IOException {
-    OptionsParser optionParser = new OptionsParser(
-            true, System.out, System.err);
-    execute(optionParser, argv);
+  /** Command-line entry point. */
+  public static void main(String[] args) throws IOException {
+    OptionsParser optionParser =
+        new OptionsParser(true, System.out, System.err);
+    execute(optionParser, args);
   }
 
   /** Execute the program using the specified command-line options. */
-  public static int execute(
-          OptionsParser optionParser,
-          String... argv) throws IOException {
+  public static int execute(OptionsParser optionParser,
+      String... args) throws IOException {
     optionParser.setBinaryName("slt");
     NoExecutor.register(optionParser);
     HsqldbExecutor.register(optionParser);
     PostgresExecutor.register(optionParser);
-    OptionsParser.SuppliedOptions options = optionParser.parse(argv);
+    OptionsParser.SuppliedOptions options = optionParser.parse(args);
     if (options.exitCode != 0) {
       return options.exitCode;
     }

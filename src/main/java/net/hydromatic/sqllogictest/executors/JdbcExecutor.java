@@ -135,13 +135,14 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
 
   /**
    * Create an executor that uses JDBC to run tests.
+   *
    * @param options  Execution options.
    * @param dbUrl    URL for the database.
    * @param username Name of database user.
    * @param password Password of database user.
    */
   public JdbcExecutor(OptionsParser.SuppliedOptions options, String dbUrl,
-                      String username, String password) {
+      String username, String password) {
     super(options);
     this.dbUrl = dbUrl;
     this.username = username;
@@ -187,6 +188,7 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
 
   /**
    * Run a query.
+   *
    * @param query       Query to execute.
    * @param statistics  Execution statistics recording the result of
    *                    the query execution.
@@ -451,7 +453,7 @@ public abstract class JdbcExecutor extends SqlSltTestExecutor {
         } catch (Throwable ex) {
           // Need to catch Throwable to handle assertion failures too
           options.message("Error while processing "
-                  + query.getQuery() + " " + ex.getMessage(), 1);
+              + query.getQuery() + " " + ex.getMessage(), 1);
           stop = result.addFailure(
               new TestStatistics.FailedTestDescription(query,
                   ex.getMessage(), ex, options.verbosity > 0));

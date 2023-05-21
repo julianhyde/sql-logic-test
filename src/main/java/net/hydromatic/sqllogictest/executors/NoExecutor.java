@@ -41,7 +41,7 @@ public class NoExecutor extends SqlSltTestExecutor {
    */
   public static void register(OptionsParser execOptions) {
     execOptions.registerExecutor("none",
-            () -> new NoExecutor(execOptions.getOptions()));
+        () -> new NoExecutor(execOptions.getOptions()));
   }
 
   @Override public TestStatistics execute(SltTestFile testFile,

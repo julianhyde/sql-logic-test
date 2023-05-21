@@ -43,7 +43,9 @@ import java.util.function.Supplier;
 
 /**
  * Extensible command-line parsing.
- * New command-line options can be registered using 'registerOption'.
+ *
+ * <p>New command-line options can be registered using
+ * {@link #registerOption(String, String, String, Function)}.
  */
 public class OptionsParser {
   /**
@@ -202,15 +204,16 @@ public class OptionsParser {
 
     /**
      * Register a new executor.
+     *
      * @param executorName  Name that identifies the executor as a
      *                      command-line option.
      * @param executor      Executor that can run tests.
      */
     public void registerExecutor(String executorName,
-                                 Supplier<SqlSltTestExecutor> executor) {
+        Supplier<SqlSltTestExecutor> executor) {
       if (this.executorFactories.containsKey(executorName)) {
         throw new RuntimeException("Executor for "
-                + Utilities.singleQuote(executorName) + " already registered");
+            + Utilities.singleQuote(executorName) + " already registered");
       }
       this.executorFactories.put(executorName, executor);
     }
@@ -228,10 +231,10 @@ public class OptionsParser {
         return null;
       }
       Supplier<SqlSltTestExecutor> supplier =
-              this.executorFactories.get(this.executor);
+          this.executorFactories.get(this.executor);
       if (supplier == null) {
         err.println("Executor for " + Utilities.singleQuote(this.executor)
-                + " not registered using 'registerExecutor");
+            + " not registered using 'registerExecutor");
         err.println("Registered executors:");
         for (String s: this.executorFactories.keySet()) {
           err.println("\t" + s);
@@ -255,11 +258,11 @@ public class OptionsParser {
 
     @Override public String toString() {
       return "Options{"
-              + "tests=" + this.directories
-              + ", execute=" + !this.doNotExecute
-              + ", executor=" + this.executor
-              + ", stopAtFirstError=" + this.stopAtFirstError
-              + '}';
+          + "tests=" + this.directories
+          + ", execute=" + !this.doNotExecute
+          + ", executor=" + this.executor
+          + ", stopAtFirstError=" + this.stopAtFirstError
+          + '}';
     }
   }
 
@@ -305,10 +308,10 @@ public class OptionsParser {
           return true;
         });
     this.registerOption("-e", "executor",
-            "Executor to use", this.options::setExecutor);
+        "Executor to use", this.options::setExecutor);
     this.registerOption("-b", "filename",
         "Load a list of buggy commands to skip from this file",
-            this.options::setBugsFile);
+        this.options::setBugsFile);
     this.registerOption("-v", null, "Increase verbosity",
         o -> {
           this.options.verbosity++;
@@ -318,6 +321,7 @@ public class OptionsParser {
 
   /**
    * Register a new command-line options.
+   *
    * @param option              String used to indicate option on the
    *                            command-line.
    * @param argName             Name of option argument; null if no argument.
@@ -340,9 +344,12 @@ public class OptionsParser {
   }
 
   /**
-   * Parse command-line arguments,
+   * Parse command-line arguments.
+   *
+   * <p>If parsing fails the result has an {@link SuppliedOptions#exitCode}
+   * field that is non-zero.
+   *
    * @return A structure summarizing the result of parsing.
-   * If parsing failed the result has an exitCode field that is non-zero.
    */
   public SuppliedOptions parse(String... argv) {
     if (argv.length == 0) {
@@ -358,7 +365,7 @@ public class OptionsParser {
         option = this.knownOptions.get(opt);
         if (option == null) {
           return this.options.abort("Unknown option "
-                  + Utilities.singleQuote(opt));
+              + Utilities.singleQuote(opt));
         }
       } else if (opt.startsWith("-")) {
         // Support GCC-style long options that begin with a single '-'.
@@ -371,7 +378,7 @@ public class OptionsParser {
         }
         if (option == null) {
           return this.options.abort("Unknown option "
-                  + Utilities.singleQuote(opt));
+              + Utilities.singleQuote(opt));
         }
       }
 
@@ -395,17 +402,17 @@ public class OptionsParser {
   }
 
   public void registerExecutor(String executorName,
-                               Supplier<SqlSltTestExecutor> executor) {
+      Supplier<SqlSltTestExecutor> executor) {
     this.options.registerExecutor(executorName, executor);
   }
 
   void usage() {
     this.options.out.println(this.options.binaryName
-            + " [options] files_or_directories_with_tests");
+        + " [options] files_or_directories_with_tests");
     this.options.out.println(
-            "Executes the SQL Logic Tests using a SQL execution engine");
+        "Executes the SQL Logic Tests using a SQL execution engine");
     this.options.out.println(
-            "See https://www.sqlite.org/sqllogictest/doc/trunk/about.wiki");
+        "See https://www.sqlite.org/sqllogictest/doc/trunk/about.wiki");
     this.options.out.println("Options:");
 
     int labelLen = 0;

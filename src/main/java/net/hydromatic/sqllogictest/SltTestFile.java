@@ -249,6 +249,7 @@ public class SltTestFile {
 
   /**
    * Parse the contents of the test file.
+   *
    * @param options  Options guiding execution.
    */
   public void parse(OptionsParser.SuppliedOptions options) throws IOException {
@@ -311,7 +312,7 @@ public class SltTestFile {
   }
 
   private void add(ISqlTestOperation operation,
-                   OptionsParser.SuppliedOptions options) {
+      OptionsParser.SuppliedOptions options) {
     options.message("Operation added " + operation.toString(), 2);
     this.fileContents.add(operation);
     if (operation.is(SqlTestQuery.class)) {
